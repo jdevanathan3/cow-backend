@@ -15,11 +15,11 @@ var _pgPromise2 = _interopRequireDefault(_pgPromise);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var user = 'postgres';
-var pass = 'pg-chatapp';
-var serverAddr = 'localhost';
-var database = 'db';
-var conString = 'postgres://' + user + ':' + pass + '@' + serverAddr + '/' + database;
+var isDevEnvironment = process.env.NODE_ENV === 'dev';
+
+_pg2.default.defaults.ssl = !isDevEnvironment;
+
+var conString = isDevEnvironment ? 'postgres://postgres:pg-chatapp@localhost/db' : process.env.DATABASE_URL;
 
 var db = (0, _pgPromise2.default)()(conString);
 
