@@ -1,0 +1,10 @@
+npm-debug.log
+coverage
+node_modules
+.DS_Store
+bundle.js
+*.map
+*.pub
+github_rsa
+*.stackdump
+dist
