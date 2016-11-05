@@ -15,78 +15,97 @@ var _pgPromise2 = _interopRequireDefault(_pgPromise);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-const user = 'postgres';
-const pass = 'pg-chatapp';
-const serverAddr = 'localhost';
-const database = 'db';
-const conString = `postgres://${ user }:${ pass }@${ serverAddr }/${ database }`;
+var user = 'postgres';
+var pass = 'pg-chatapp';
+var serverAddr = 'localhost';
+var database = 'db';
+var conString = 'postgres://' + user + ':' + pass + '@' + serverAddr + '/' + database;
 
-const db = (0, _pgPromise2.default)()(conString);
+var db = (0, _pgPromise2.default)()(conString);
 
-const routeRequest = exports.routeRequest = dbOp => (req, res) => dbOp.then(dbRes => res.send(dbRes));
+var routeRequest = exports.routeRequest = function routeRequest(dbOp) {
+  return function (req, res) {
+    return dbOp.then(function (dbRes) {
+      return res.send(dbRes);
+    });
+  };
+};
 
-const query = exports.query = (query, params) => db.any(query, params);
+var query = exports.query = function query(_query, params) {
+  return db.any(_query, params);
+};
 
-const routeQuery = exports.routeQuery = (query, params) => (req, res) => db.any(query, params).then(dbRes => res.send(dbRes)).catch(err => res.send({ err }));
+var routeQuery = exports.routeQuery = function routeQuery(query, params) {
+  return function (req, res) {
+    return db.any(query, params).then(function (dbRes) {
+      return res.send(dbRes);
+    }).catch(function (err) {
+      return res.send({ err: err });
+    });
+  };
+};
 
-const queryOnce = exports.queryOnce = (query, params) => db.one(query, params);
+var queryOnce = exports.queryOnce = function queryOnce(query, params) {
+  return db.one(query, params);
+};
 
 // ADD user_id foreign key to items
-const createItemsTable = exports.createItemsTable = () => {
-  return query(`CREATE TABLE items(
-      id SERIAL PRIMARY KEY,
-      text varchar(255) NOT NULL,
-      date date,
-      user_id integer REFERENCES users (id) ON DELETE CASCADE
-    )`);
+var createItemsTable = exports.createItemsTable = function createItemsTable() {
+  return query('CREATE TABLE items(\n      id SERIAL PRIMARY KEY,\n      text varchar(255) NOT NULL,\n      date date,\n      user_id integer REFERENCES users (id) ON DELETE CASCADE\n    )');
 };
 
-const getItems = exports.getItems = userId => query(`SELECT * from items WHERE user_id=${ userId }`);
-
-const addItem = exports.addItem = ({ text, date = null, userId }) => {
-  return queryOnce(`INSERT INTO items (text, date, user_id)
-    VALUES ($1, $2, $3)
-    RETURNING id;`, [text, date, userId]);
+var getItems = exports.getItems = function getItems(userId) {
+  return query('SELECT * from items WHERE user_id=' + userId);
 };
 
-const addItemWithId = exports.addItemWithId = (id, { text, date }) => {
-  return queryOnce(`INSERT INTO items (text, date)
-    VALUES ('${ text }', '${ date }')
-    RETURNING id;`);
+var addItem = exports.addItem = function addItem(_ref) {
+  var text = _ref.text,
+      _ref$date = _ref.date,
+      date = _ref$date === undefined ? null : _ref$date,
+      userId = _ref.userId;
+
+  return queryOnce('INSERT INTO items (text, date, user_id)\n    VALUES ($1, $2, $3)\n    RETURNING id;', [text, date, userId]);
 };
 
-const editItem = exports.editItem = (id, { text, date }) => {
-  return queryOnce(`UPDATE items SET
-      text=COALESCE($1, text),
-      date=COALESCE($2, date)
-    WHERE id = ${ id }
-    RETURNING id;`, [text, date]);
+var addItemWithId = exports.addItemWithId = function addItemWithId(id, _ref2) {
+  var text = _ref2.text,
+      date = _ref2.date;
+
+  return queryOnce('INSERT INTO items (text, date)\n    VALUES (\'' + text + '\', \'' + date + '\')\n    RETURNING id;');
 };
 
-const deleteItem = exports.deleteItem = id => {
-  return queryOnce(`DELETE FROM items WHERE id = ${ id }
-    RETURNING id;`);
+var editItem = exports.editItem = function editItem(id, _ref3) {
+  var text = _ref3.text,
+      date = _ref3.date;
+
+  return queryOnce('UPDATE items SET\n      text=COALESCE($1, text),\n      date=COALESCE($2, date)\n    WHERE id = ' + id + '\n    RETURNING id;', [text, date]);
+};
+
+var deleteItem = exports.deleteItem = function deleteItem(id) {
+  return queryOnce('DELETE FROM items WHERE id = ' + id + '\n    RETURNING id;');
 };
 
 // users
 
-const createUsersTable = exports.createUsersTable = () => {
-  return query(`CREATE TABLE users(
-    id SERIAL PRIMARY KEY,
-    email varchar(255) NOT NULL UNIQUE,
-    password varchar(255) NOT NULL
-  );`);
+var createUsersTable = exports.createUsersTable = function createUsersTable() {
+  return query('CREATE TABLE users(\n    id SERIAL PRIMARY KEY,\n    email varchar(255) NOT NULL UNIQUE,\n    password varchar(255) NOT NULL\n  );');
 };
 
-const dropUsersTable = exports.dropUsersTable = () => query('DROP TABLE users;');
-
-const findUserByEmail = exports.findUserByEmail = email => {
-  return queryOnce(`SELECT * FROM users WHERE email = '${ email }';`);
+var dropUsersTable = exports.dropUsersTable = function dropUsersTable() {
+  return query('DROP TABLE users;');
 };
 
-const getAllUsers = exports.getAllUsers = email => query('SELECT * FROM users;');
+var findUserByEmail = exports.findUserByEmail = function findUserByEmail(email) {
+  return queryOnce('SELECT * FROM users WHERE email = \'' + email + '\';');
+};
 
-const signupUser = exports.signupUser = ({ email, password }) => {
-  return query(`INSERT INTO users (email, password)
-    VALUES ('${ email }', '${ password }')`);
+var getAllUsers = exports.getAllUsers = function getAllUsers(email) {
+  return query('SELECT * FROM users;');
+};
+
+var signupUser = exports.signupUser = function signupUser(_ref4) {
+  var email = _ref4.email,
+      password = _ref4.password;
+
+  return query('INSERT INTO users (email, password)\n    VALUES (\'' + email + '\', \'' + password + '\')');
 };
