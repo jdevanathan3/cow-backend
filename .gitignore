@@ -7,4 +7,3 @@ bundle.js
 *.pub
 github_rsa
 *.stackdump
-dist
