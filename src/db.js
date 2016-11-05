@@ -1,11 +1,13 @@
 import pg from 'pg'
 import pgp from 'pg-promise'
 
-const user = 'postgres'
-const pass = 'pg-chatapp'
-const serverAddr = 'localhost'
-const database = 'db'
-const conString = `postgres://${user}:${pass}@${serverAddr}/${database}`
+const isDevEnvironment = process.env.NODE_ENV === 'dev'
+
+pg.defaults.ssl = !isDevEnvironment
+
+const conString = isDevEnvironment ?
+  'postgres://postgres:pg-chatapp@localhost/db' :
+  process.env.DATABASE_URL
 
 const db = pgp()(conString)
 
