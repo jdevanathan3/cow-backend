@@ -18,11 +18,15 @@ app.use(bodyParser.json())
 app.use(cookieParser())
 app.use(tokenAuth())
 
+app.get('/', (req, res) => {
+  res.send('API is running correctly!')
+})
+
 app.get('/users', (req, res) => {
   db.getAllUsers().then((users) => {
     return res.send(users)
   }).catch((err) => {
-    return res.send('API Error' + err)
+    return res.send({ success: false, err: 'API Error: ' + err })
   })
 })
 
@@ -43,10 +47,6 @@ app.post('/auth', getUserMiddleware, (req, res) => {
   res.send({ success: true })
 })
 
-app.get('/', (req, res) => {
-  res.send('API is running correctly!')
-})
-
 app.get('/items', getUserMiddleware, (req, res) => {
   const { id } = req.user
   db.getItems(id).then((items) => {
@@ -58,9 +58,8 @@ app.get('/items', getUserMiddleware, (req, res) => {
 
 app.post('/items', getUserMiddleware, (req, res) => {
   const { id } = req.user
-  const { text, date } = req.body
-  console.log(id)
-  db.addItem({ text, date, userId: id })
+  const { text, date, startTime, endTime, parsedTimes } = req.body
+  db.addItem({ text, date, startTime, endTime, parsedTimes, userId: id })
     .then((result) => {
       res.send(result)
     })

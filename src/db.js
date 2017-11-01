@@ -6,7 +6,7 @@ const isDevEnvironment = process.env.NODE_ENV === 'dev'
 pg.defaults.ssl = !isDevEnvironment
 
 const conString = isDevEnvironment ?
-  'postgres://postgres:pg-chatapp@localhost/db' :
+  'postgres://localhost/cow' :
   process.env.DATABASE_URL
 
 const db = pgp()(conString)
@@ -23,7 +23,6 @@ export const routeQuery = (query, params) =>
 
 export const queryOnce = (query, params) => db.one(query, params)
 
-// ADD user_id foreign key to items
 export const createItemsTable = () => {
   return query(`CREATE TABLE items(
       id SERIAL PRIMARY KEY,
@@ -36,10 +35,10 @@ export const createItemsTable = () => {
 export const getItems = (userId) =>
   query(`SELECT * from items WHERE user_id=${userId}`)
 
-export const addItem = ({ text, date = null , userId}) => {
-  return queryOnce(`INSERT INTO items (text, date, user_id)
-    VALUES ($1, $2, $3)
-    RETURNING id;`, [text, date, userId])
+export const addItem = ({ text, date=null , startTime=null, endTime=null, parsedTimes=[], userId}) => {
+  return queryOnce(`INSERT INTO items (text, date, start_time, end_time, user_id, parsed_times)
+    VALUES ($1, $2, $3, $4, $5, $6::text[])
+    RETURNING id;`, [text, date, startTime, endTime, userId, parsedTimes])
 }
 
 export const addItemWithId = (id, { text, date }) => {
